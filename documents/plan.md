@@ -14,4 +14,5 @@ Finding a host language will be simple. I plan to use a language that has parsin
 * Nov 9: Host language chosen, semantics designed, parser researched
 * Nov 16: Semantics and parser work
 * Nov 23: Parser and interpreter/serialization work
-* Nov 30: Eating turkey and pumpkin pie 
+* Nov 30: Eating turkey and pumpkin pie, working on interpreter, beginning GUI
+* Month of December: Cleaning up project, designing GUI

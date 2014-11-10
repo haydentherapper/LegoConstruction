@@ -19,11 +19,11 @@ package legoconstruction
 
 sealed abstract class AST
 
-case class Program(varList: VarList, instructionList: InstructionList) extends AST
-case class VarList(varList: List[Var]) extends AST
-case class Var(varName: VarName, instructionList: InstructionList) extends AST
+case class Program(varList: List[Var], instructionList: List[Instruction]) extends AST
+
+case class Var(varName: VarName, instructionList: List[Instruction]) extends AST
 case class VarName(varName: String) extends AST
-case class InstructionList(instructionList: List[Instruction]) extends AST
+
 case class Instruction(piece: Piece, position: Position) extends AST
 case class Piece(m: Int, n: Int, color: Color, part: Part) extends AST
 case class Color(color: String) extends AST

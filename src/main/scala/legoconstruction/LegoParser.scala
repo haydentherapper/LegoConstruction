@@ -12,7 +12,7 @@ import scala.util.parsing.combinator._
  * Var := VarName "{" InstructionList "}"
  * VarName := String
  * InstructionList := Instruction*
- * Instruction := Piece "at" Position
+ * Instruction := (Piece | VarName) "at" Position
  * Piece := MxN Color Part
  * Color := "Red" | "Yellow" | "Blue" | "Green" | ...
  * Part := "Brick" | ...
@@ -26,14 +26,15 @@ object LegoParser extends JavaTokenParsers {
 
   def varList: Parser[List[Var]] = rep(var_t)
   def var_t: Parser[Var] = varName~"{"~instructionList~"}" ^^ {case v~"{"~iL~"}" => Var(v, iL)}
-  def varName: Parser[VarName] = "\w+".r ^^ VarName
+  def varName: Parser[VarName] = "\\w+".r ^^ VarName
 
   def instructionList: Parser[List[Instruction]] = rep(instruction)
-  def instruction: Parser[Instruction] = piece~"at"~position ^^ {case p~"at"~pos => Instruction(p,pos)}
+  def instruction: Parser[Instruction] = (piece~"at"~position ^^ {case p~"at"~pos => Instruction(p,pos)}
+                                        | varName~"at"~position ^^ {case v~"at"~pos => Instruction(v,pos)} )
   def piece: Parser[Piece] = decimalNumber~"x"~decimalNumber~color~part ^^
     {case m~"x"~n~c~p => Piece(m.toInt,n.toInt,c,p)}
-  def color: Parser[Color] = "\w+".r ^^ Color
+  def color: Parser[Color] = "\\w+".r ^^ Color
   def part: Parser[Part] = "Brick".r ^^ (x => Part(x))
-  def position: Parser[Position] = decimalNumber~decimalNumber ^^ {case x~y => Position(x.toInt,y.toInt)}
+  def position: Parser[Position] = decimalNumber~","~decimalNumber ^^ {case x~","~y => Position(x.toInt,y.toInt)}
 
 }

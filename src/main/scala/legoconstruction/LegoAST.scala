@@ -10,7 +10,7 @@ package legoconstruction
  * Var := VarName "{" InstructionList "}"
  * VarName := String
  * InstructionList := Instruction*
- * Instruction := Piece "at" Position
+ * Instruction := (Piece | VarName) "at" Position
  * Piece := MxN Color Part
  * Color := "Red" | "Yellow" | "Blue" | "Green" | ...
  * Part := "Brick" | ...
@@ -24,7 +24,7 @@ case class Program(varList: List[Var], instructionList: List[Instruction]) exten
 case class Var(varName: VarName, instructionList: List[Instruction]) extends AST
 case class VarName(varName: String) extends AST
 
-case class Instruction(piece: Piece, position: Position) extends AST
+case class Instruction(piece: Any, position: Position) extends AST
 case class Piece(m: Int, n: Int, color: Color, part: Part) extends AST
 case class Color(color: String) extends AST
 case class Part(part: String) extends AST

@@ -143,3 +143,13 @@ The two things I plan to add before the end are the ability for dynamically size
 
 #### An overview of the architecture of your system.
 
+There are four parts to this system: The initial set up, the AST, the parser, and the interpreter. 
+
+The set up will be in a main function that will take in the text file and produce the result. 
+
+The AST encodes the grammar. This includes case classes for Program, Var, and Instruction, along with other wrappers for strings. 
+
+The parser uses JavaTokenParsers to parse the input. It uses the AST classes as wrappers for output. Since the grammar is relatively simple, the parse is relatively clean. I use rep() to consume all instances of variables and instructions, which produces a List() of the respective AST.
+
+Finally, the interpreter will figure out where all parsed input must go in the grid. It will build the 3D array. It must determine everything that stacks on top of each other and the relative placement of pieces and variables in respect to the grid. It will also determine the details, such as how to deal with pieces that are offset when stacked, such as placing a 2x2 brick at the corner of another 2x2 brick, and then wanting to place a piece below in the space that is left. The matrix will then be serialized into JSON for input to the visualization DSL.
+

@@ -7,7 +7,7 @@ import scala.math
  */
 object LegoInterpreter {
 
-  val EMPTY_PIECE = -1
+  val EMPTY_PIECE = 0
 
   val matrixColor = Array.fill(32,32){Array[Int]()}
   val matrixObject = Array.fill(32,32){Array[String]()}
@@ -15,7 +15,8 @@ object LegoInterpreter {
                                       "Color(Red)" -> 1,
                                       "Color(Yellow)" -> 2,
                                       "Color(Blue)" -> 3,
-                                      "Color(Black)" -> 4)
+                                      "Color(Green)" -> 4,
+                                      "Color(Black)" -> 5)
 
   def eval(ast: AST): Array[Array[Array[Int]]] = ast match {
     case Program(x:List[Var], y:List[Instruction]) =>

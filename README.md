@@ -1,5 +1,6 @@
 # Lego Construction
 ### Designing and visualizing Lego constructions
+
 This project aims to allow users to render visual representations of building blocks on the fly.
 This will be accomplished in two stages, through two DSLs:
 
@@ -8,7 +9,16 @@ This will be accomplished in two stages, through two DSLs:
 
 This repository is of the first DSL.
 
+### Running the program
+
+```
+sbt run
+sbt compile
+```
+Then, enter the name of the text file containing the instructions. A sample one is given at samples/sample.in.
+
 ### Input to the program
+
 Input currently is given as a list of variables and instructions. The following represents valid input:
 
 ```

@@ -12,8 +12,8 @@ This repository is of the first DSL.
 ### Running the program
 
 ```
-sbt run
 sbt compile
+sbt run
 ```
 Then, enter the name of the text file containing the instructions. A sample one is given at samples/sample.in.
 

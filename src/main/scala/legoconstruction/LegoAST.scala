@@ -28,4 +28,8 @@ case class Instruction(piece: Any, position: Position) extends AST
 case class Piece(m: Int, n: Int, color: Color, part: Part) extends AST
 case class Color(color: String) extends AST
 case class Part(part: String) extends AST
-case class Position(x: Int, y: Int)
+case class Position(x: Int, y: Int) {
+  def +(other: Position): Position = {
+    Position(x + other.x, y + other.y)
+  }
+}

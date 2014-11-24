@@ -6,15 +6,18 @@ package legoconstruction
 object LegoConstruction {
 
   def main(args: Array[String]) {
-    val input = "Pawn {" +
-                  "2x2 Red Brick at 1,1" +
-                "}\n" +
-                "Rook {" +
-                  "2x2 Red Brick at 1,1" +
-                "}\n" +
-                "Pawn at 2,1\n" +
-                "2x2 Yellow Brick at 2,1"
-    println(LegoParser(input))
+
+    println("Please enter the name of the file containing your instructions:")
+    val fileName = scala.io.StdIn.readLine()
+    val program = scala.io.Source.fromFile(fileName)
+    val lines = program.mkString
+    println(lines)
+    program.close()
+
+    LegoParser(lines) match {
+      case LegoParser.Success(t, _) => println(LegoInterpreter.eval(t).deep.mkString("\n"))
+      case e: LegoParser.NoSuccess => println(e.msg)
+    }
   }
 
 }

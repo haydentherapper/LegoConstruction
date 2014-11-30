@@ -20,6 +20,10 @@ The only tool I have used so far is Scala. I used JavaTokenParsers, which worked
 
 ### Where did you run into trouble and why? For example, did you come up with some syntax that you found difficult to implement, given your host language choice? Did you want to support multiple features, but you had trouble getting them to play well together?
 
+The first thing I changed was the syntax. I wanted to implement a lexer/parser for tabs instead of curly braces, but found this really hard. I therefore went with curly braces. 
 
+I also had/am having difficulty with dynamically created matrices for the variables. Right now, I am implementing a way to reference pieces above or below the previous placement, which makes it so I can design any set, although it would be verbose. Next, I am working on creating dynamic grids for variables, and placing that whole object in the grid. There are some very annoying edge cases, such as checking for connectedness amongst pieces, but that will be dealt with later.
 
 ### What's left to accomplish before the end of the project?
+
+As I mentioned, implementing these relative placements, and then designing the dynamic grids for variables. I need error checking also. I would like to implement some of the extra user features too.

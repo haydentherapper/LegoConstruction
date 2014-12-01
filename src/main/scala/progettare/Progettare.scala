@@ -1,9 +1,9 @@
-package legoconstruction
+package progettare
 
 /**
  * Created by Hayden Blauzvern on 11/7/14.
  */
-object LegoConstruction {
+object Progettare {
 
   val mapping:Map[String, String] = Map("0" -> Console.WHITE,
                                         "1" -> Console.RED,
@@ -19,9 +19,9 @@ object LegoConstruction {
     val lines = program.mkString
     program.close()
 
-    LegoParser(lines) match {
-      case LegoParser.Success(t, _) => println(colorPrint(LegoInterpreter.eval(t).deep.mkString("\n")))
-      case e: LegoParser.NoSuccess => println(e.msg)
+    ProgettareParser(lines) match {
+      case ProgettareParser.Success(t, _) => println(colorPrint(ProgettareInterpreter.eval(t).deep.mkString("\n")))
+      case e: ProgettareParser.NoSuccess => println(e.msg)
     }
   }
 

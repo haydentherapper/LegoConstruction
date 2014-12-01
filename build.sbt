@@ -1,4 +1,4 @@
-name := "LegoConstruction"
+name := "Progettare"
 
 version := "1.0"
 

@@ -1,11 +1,11 @@
-package legoconstruction
+package progettare
 
 import scala.math
 
 /**
  * Created by Hayden Blauzvern on 11/12/14.
  */
-object LegoInterpreter {
+object ProgettareInterpreter {
 
   val EMPTY_PIECE = 0
 

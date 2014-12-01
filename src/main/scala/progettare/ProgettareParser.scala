@@ -1,4 +1,4 @@
-package legoconstruction
+package progettare
 
 import scala.util.parsing.combinator._
 
@@ -18,7 +18,7 @@ import scala.util.parsing.combinator._
  * Part := "Brick" | ...
  * Position := X,Y
  */
-object LegoParser extends JavaTokenParsers {
+object ProgettareParser extends JavaTokenParsers {
 
   def apply(s: String): ParseResult[AST] = parseAll(program, s)
 

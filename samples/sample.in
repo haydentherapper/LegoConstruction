@@ -1,14 +1,14 @@
 Pawn {
- 2x2 Red Brick at 0,0
+ 2x2 Red Brick at 1,1
 }
 
 Rook {
- 2x2 Red Brick at 1,1
- 2x2 Yellow Brick at 2,2
+ 2x2 Red Brick at 2,2
+ 2x2 Yellow Brick at 3,3
 }
 
-2x2 Yellow Brick at 0,0
-2x2 Red Brick at 1,1
-2x2 Green Brick at 1,1
-Pawn at 5,0
-Rook at 8,0
+2x2 Yellow Brick at 1,1
+2x2 Red Brick at 2,2
+2x2 Green Brick at 2,2
+Pawn at 6,1
+Rook at 9,1

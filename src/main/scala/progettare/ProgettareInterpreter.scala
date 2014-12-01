@@ -40,11 +40,11 @@ object ProgettareInterpreter {
         
         rel match {
           // Find first avaiable position, searching from the bottom upwards
-          case Relative("at") =>  {
+          case Relative("at") => {
             val curMaxPos = findFirstAvailablePos(mat(x)(y).toList)
             if (curMaxPos > finalPos) {
               finalPos = curMaxPos
-            }  
+            }
           }
 
           // Find position based on maximum height of each space below
@@ -56,11 +56,12 @@ object ProgettareInterpreter {
 
           // Find first avaiable position, searching from the max height downwards
           case Relative("below") => {
-
-            
-          }  
+            val curMaxPos = findLastAvailablePos(mat(x)(y).toList)
+            if (curMaxPos > finalPos) {
+              finalPos = curMaxPos
+            }
+          }
         }
-        
         
       }
     }
@@ -85,16 +86,16 @@ object ProgettareInterpreter {
       case EMPTY_PIECE::rest => 0
       case x::rest => 1 + findEmpty(rest)
     }
-    math.min(list.length, findEmpty(list))
+    math.min(list.length, findEmpty(list)) // do I need this?
   }
 
   def findLastAvailablePos(list:List[Int]): Int = {
     def findEmpty(list:List[Int]): Int = list match {
-      case Nil => 0
-      case EMPTY_PIECE::rest => 0
-      case x::rest => 1 + findEmpty(rest)
+      case Nil => -1
+      case rest:+EMPTY_PIECE => -1
+      case rest:+x => -1 + findEmpty(rest)
     }
-    math.max(-1, findEmpty(list)) // fix this to catch error if nothing can be placed below
+    list.length + findEmpty(list)
   }
 
   def varNameToInstructionList(varList:List[Var], varName:VarName): List[Instruction] = {

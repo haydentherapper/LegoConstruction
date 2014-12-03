@@ -1,39 +1,51 @@
 package progettare
 
-import scala.math
-
 /**
  * Created by Hayden Blauzvern on 11/12/14.
  */
 object ProgettareInterpreter {
 
-  val EMPTY_PIECE = 0
+  case class MatrixObject(color:Int = EmptyPiece,
+                          xCon:(Boolean,Boolean) = (false,false),
+                          yCon:(Boolean,Boolean) = (false,false),
+                          zCon:(Boolean,Boolean) = (false,false))
 
-  val matrixColor = Array.fill(32,32){Array[Int]()}
-  val matrixObject = Array.fill(32,32){Array[String]()}
-  val mapping:Map[String, Int] = Map("Empty" -> EMPTY_PIECE,
+  val EmptyPiece = 0
+
+  val matrix = Array.fill(32,32){Array[MatrixObject]()}
+
+  var varList:List[Var] = List()
+
+  val mapping:Map[String, Int] = Map("Empty" -> EmptyPiece,
                                       "Color(Red)" -> 1,
                                       "Color(Yellow)" -> 2,
                                       "Color(Blue)" -> 3,
                                       "Color(Green)" -> 4,
                                       "Color(Black)" -> 5)
 
-  def eval(ast: AST): Array[Array[Array[Int]]] = ast match {
-    case Program(x:List[Var], y:List[Instruction]) =>
-      y.foreach(i => evalInstruction(i, x))
-      matrixColor
+  def eval(ast: AST): Array[Array[Array[MatrixObject]]] = ast match {
+    case Program(vList:List[Var], iList:List[Instruction]) =>
+      varList = vList
+      iList.foreach(evalInstruction(_))
+      matrix
   }
 
-  def evalInstruction(i:Instruction, varList:List[Var], varPosition: Position = Position(0,0)): Unit = i match {
-    case Instruction(p: Piece, rel: Relative, pos: Position) => placePiece(p, pos + varPosition, rel)
+  def evalInstruction(i:Instruction,
+                      mat:Array[Array[Array[MatrixObject]]] = matrix): Unit = i match {
+    case Instruction(p: Piece, rel: Relative, pos: Position) =>
+      placePiece(p, pos, rel, mat)
     case Instruction(v: VarName, rel: Relative, pos: Position) =>
-      val instructionList = varNameToInstructionList(varList, v)
-      instructionList.foreach(i => evalInstruction(i, varList, pos))
+      val instructionList = varNameToInstructionList(v)
+      createVarMatrix(instructionList)
+      // need to use rel and pos to place the variable
   }
 
   // First find the max height where we can place the Piece
   // Next place each section of the Piece in the grid, filling space if necessary
-  def placePiece(p:Piece, pos:Position, rel: Relative, mat:Array[Array[Array[Int]]] = matrixColor): Unit = {
+  def placePiece(p:Piece,
+                 pos:Position,
+                 rel: Relative,
+                 mat:Array[Array[Array[MatrixObject]]]): Unit = {
     var finalPos = -1
     for (x <- pos.x to pos.x+p.m-1) {
       for (y <- pos.y to pos.y+p.n-1) {
@@ -66,41 +78,69 @@ object ProgettareInterpreter {
       }
     }
 
-    for (x <- pos.x to pos.x+p.m-1) {
-      for (y <- pos.y to pos.y+p.n-1) {
-        var zDim: Array[Int] = mat(x)(y)
+    for (x <- pos.x until pos.x+p.m) {
+      for (y <- pos.y until pos.y+p.n) {
+        var zDim: Array[MatrixObject] = mat(x)(y)
         while (zDim.length <= finalPos) {
-          zDim = zDim :+ EMPTY_PIECE
+          zDim = zDim :+ MatrixObject()
         }
-        zDim(finalPos) = mapping(p.color.toString)
-        matrixColor(x)(y) = zDim
+        zDim(finalPos) = MatrixObject(color = mapping(p.color.toString))
+        mat(x)(y) = zDim
       }
     }
   }
 
   // Returns the max height of the first available position
   // where a piece could be placed
-  def findFirstAvailablePos(list:List[Int]): Int = {
-    def findEmpty(list:List[Int]): Int = list match {
+  def findFirstAvailablePos(list:List[MatrixObject]): Int = {
+    def findEmpty(list:List[MatrixObject]): Int = list match {
       case Nil => 0
-      case EMPTY_PIECE::rest => 0
+      case x::rest if x.color == EmptyPiece  => 0
       case x::rest => 1 + findEmpty(rest)
     }
     math.min(list.length, findEmpty(list)) // do I need this?
   }
 
-  def findLastAvailablePos(list:List[Int]): Int = {
-    def findEmpty(list:List[Int]): Int = list match {
+  def findLastAvailablePos(list:List[MatrixObject]): Int = {
+    def findEmpty(list:List[MatrixObject]): Int = list match {
       case Nil => -1
-      case rest:+EMPTY_PIECE => -1
+      case rest:+x if x.color == EmptyPiece => -1
       case rest:+x => -1 + findEmpty(rest)
     }
     list.length + findEmpty(list)
   }
 
-  def varNameToInstructionList(varList:List[Var], varName:VarName): List[Instruction] = {
+  def varNameToInstructionList(varName:VarName): List[Instruction] = {
     varList.foreach(v => if (v.varName == varName) return v.instructionList)
     null
+  }
+
+  def createVarMatrix(instructionList:List[Instruction]): Array[Array[Array[MatrixObject]]] = {
+    var dynamicMatrix = Array.fill(1,1){Array[MatrixObject]()}
+    instructionList.foreach(i => i match{
+      case Instruction(_, rel: Relative, pos: Position)
+        if pos.x >= dynamicMatrix.length
+          || pos.y >= dynamicMatrix(0).length => {
+        dynamicMatrix = copyMat(dynamicMatrix, pos.x + 1, pos.y + 1) //If x=2, we need an array of size 3
+        evalInstruction(i, mat = dynamicMatrix)
+      }
+      case _ => evalInstruction(i, mat = dynamicMatrix)
+    })
+    println(dynamicMatrix.deep.mkString("\n"))
+    println("\n")
+    dynamicMatrix
+  }
+
+  def copyMat(mat:Array[Array[Array[MatrixObject]]],
+              x:Int,
+              y:Int): Array[Array[Array[MatrixObject]]] = {
+    val copyMatrix = Array.fill(x,y){Array[MatrixObject]()}
+    for (i <- 0 until mat.length) {
+      for (j <- 0 until mat(0).length) {
+        copyMatrix(i)(j) = mat(i)(j)
+      }
+    }
+    copyMatrix
   }
 
 }

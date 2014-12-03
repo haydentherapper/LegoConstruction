@@ -101,18 +101,31 @@ object ProgettareInterpreter {
       for (x <- 0 until varMatrix.length) {
         for (y <- 0 until varMatrix(x).length) {
           for (z <- curZAxis until varMatrix(x)(y).length + curZAxis) {
-            allPiecesFit &= (z >= mat(x)(y).length || mat(x)(y)(z).color == EmptyPiece)
+            allPiecesFit &= (z >= mat(x+pos.x)(y+pos.y).length || mat(x+pos.x)(y+pos.y)(z).color == EmptyPiece)
           }
         }
       }
 
       if (allPiecesFit) {
         searchForFit = false
-        println(curZAxis)
       } else {
         curZAxis += 1
       }
     }
+
+    for (x <- 0 until varMatrix.length) {
+      for (y <- 0 until varMatrix(x).length) {
+        for (z <- 0 until varMatrix(x)(y).length) {
+          var zDim: Array[MatrixObject] = mat(x+pos.x)(y+pos.y)
+          while (zDim.length <= z+curZAxis) {
+            zDim = zDim :+ MatrixObject()
+          }
+          zDim(z+curZAxis) = MatrixObject(color = varMatrix(x)(y)(z).color)
+          mat(x+pos.x)(y+pos.y) = zDim
+        }
+      }
+    }
+
   }
 
   // Returns the max height of the first available position
@@ -140,32 +153,26 @@ object ProgettareInterpreter {
     null
   }
 
-  def createVarMatrix(instructionList:List[Instruction]): Array[Array[Array[MatrixObject]]] = {
+  def createVarMatrix(instructionList: List[Instruction]): Array[Array[Array[MatrixObject]]] = {
     var dynamicMatrix = Array.fill(1,1){Array[MatrixObject]()}
     instructionList.foreach(i => i match{
-      case Instruction(_, rel: Relative, pos: Position)
-        if pos.x >= dynamicMatrix.length
-          || pos.y >= dynamicMatrix(0).length => {
-        dynamicMatrix = copyMat(dynamicMatrix, pos.x + 1, pos.y + 1) //If x=2, we need an array of size 3
+      case Instruction(p: Piece, rel: Relative, pos: Position)
+        if pos.x + p.m >= dynamicMatrix.length
+          || pos.y + p.n >= dynamicMatrix(0).length => {
+        dynamicMatrix = copyMat(dynamicMatrix, pos.x + p.m + 1, pos.y + p.n + 1) //x=2,m=2, we need an array of size 5
         evalInstruction(i, mat = dynamicMatrix)
       }
-      case _ =>
-        println(i.position.x + " " + i.position.y)
-        println(dynamicMatrix.deep.mkString("\n"))
-        println()
-        evalInstruction(i, mat = dynamicMatrix)
+
+      case Instruction(v: VarName, rel: Relative, pos: Position) => throw new Exception("Unsupported")
+
+      case _ => evalInstruction(i, mat = dynamicMatrix)
     })
-
-    // TODO: Delete
-    println(dynamicMatrix.deep.mkString("\n"))
-    println("\n")
-
     dynamicMatrix
   }
 
-  def copyMat(mat:Array[Array[Array[MatrixObject]]],
-              x:Int,
-              y:Int): Array[Array[Array[MatrixObject]]] = {
+  def copyMat(mat: Array[Array[Array[MatrixObject]]],
+              x: Int,
+              y: Int): Array[Array[Array[MatrixObject]]] = {
     val copyMatrix = Array.fill(x,y){Array[MatrixObject]()}
     for (i <- 0 until mat.length) {
       for (j <- 0 until mat(0).length) {

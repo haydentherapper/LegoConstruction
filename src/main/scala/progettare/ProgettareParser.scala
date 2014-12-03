@@ -26,22 +26,22 @@ object ProgettareParser extends JavaTokenParsers {
 
   def apply(s: String): ParseResult[AST] = parseAll(program, s)
 
-  def program: Parser[Program] = varList~instructionList ^^ {case vL~iL => Program(vL,iL)}
+  lazy val program: Parser[Program] = varList~instructionList ^^ {case vL~iL => Program(vL,iL)}
 
-  def varList: Parser[List[Var]] = rep(var_t)
-  def var_t: Parser[Var] = varName~"{"~instructionList~"}" ^^ {case v~"{"~iL~"}" => Var(v, iL)}
-  def varName: Parser[VarName] = "\\w+".r ^^ VarName
+  lazy val varList: Parser[List[Var]] = rep(var_t)
+  lazy val var_t: Parser[Var] = varName~"{"~instructionList~"}" ^^ {case v~"{"~iL~"}" => Var(v, iL)}
+  lazy val varName: Parser[VarName] = "\\w+".r ^^ VarName
 
-  def instructionList: Parser[List[Instruction]] = rep(instruction)
-  def instruction: Parser[Instruction] = (piece~relative~position ^^ {case p~rel~pos =>
+  lazy val instructionList: Parser[List[Instruction]] = rep(instruction)
+  lazy val instruction: Parser[Instruction] = (piece~relative~position ^^ {case p~rel~pos =>
                                                                         Instruction(p,rel,pos - OffsetPosition)}
                                         | varName~relative~position ^^ {case v~rel~pos =>
                                                                         Instruction(v,rel,pos - OffsetPosition)} )
-  def relative: Parser[Relative] = """at|above|below""".r ^^ Relative
-  def piece: Parser[Piece] = wholeNumber~"x"~wholeNumber~color~part ^^
+  lazy val relative: Parser[Relative] = """at|above|below""".r ^^ Relative
+  lazy val piece: Parser[Piece] = wholeNumber~"x"~wholeNumber~color~part ^^
     {case m~"x"~n~c~p => Piece(m.toInt,n.toInt,c,p)}
-  def color: Parser[Color] = "\\w+".r ^^ Color
-  def part: Parser[Part] = "Brick".r ^^ (x => Part(x))
-  def position: Parser[Position] = wholeNumber~","~wholeNumber ^^ {case x~","~y => Position(x.toInt,y.toInt)}
+  lazy val color: Parser[Color] = "\\w+".r ^^ Color
+  lazy val part: Parser[Part] = "Brick".r ^^ (x => Part(x))
+  lazy val position: Parser[Position] = wholeNumber~","~wholeNumber ^^ {case x~","~y => Position(x.toInt,y.toInt)}
 
 }

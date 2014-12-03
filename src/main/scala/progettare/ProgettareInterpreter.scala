@@ -32,12 +32,9 @@ object ProgettareInterpreter {
 
   def evalInstruction(i:Instruction,
                       mat:Array[Array[Array[MatrixObject]]] = matrix): Unit = i match {
-    case Instruction(p: Piece, rel: Relative, pos: Position) =>
-      placePiece(p, pos, rel, mat)
+    case Instruction(p: Piece, rel: Relative, pos: Position) => placePiece(p, pos, rel, mat)
     case Instruction(v: VarName, rel: Relative, pos: Position) =>
-      val instructionList = varNameToInstructionList(v)
-      createVarMatrix(instructionList)
-      // need to use rel and pos to place the variable
+      placeVariable(createVarMatrix(varNameToInstructionList(v)), pos, rel, mat)
   }
 
   // First find the max height where we can place the Piece
@@ -47,8 +44,8 @@ object ProgettareInterpreter {
                  rel: Relative,
                  mat:Array[Array[Array[MatrixObject]]]): Unit = {
     var finalPos = -1
-    for (x <- pos.x to pos.x+p.m-1) {
-      for (y <- pos.y to pos.y+p.n-1) {
+    for (x <- pos.x until pos.x+p.m) {
+      for (y <- pos.y until pos.y+p.n) {
         
         rel match {
           // Find first avaiable position, searching from the bottom upwards
@@ -90,6 +87,34 @@ object ProgettareInterpreter {
     }
   }
 
+  def placeVariable(varMatrix:Array[Array[Array[MatrixObject]]],
+                    pos:Position,
+                    rel:Relative,
+                    mat:Array[Array[Array[MatrixObject]]]): Unit = {
+    // Assume rel="at" for now
+    var curZAxis = 0
+    var searchForFit = true
+
+    while(searchForFit) {
+      var allPiecesFit = true
+
+      for (x <- 0 until varMatrix.length) {
+        for (y <- 0 until varMatrix(x).length) {
+          for (z <- curZAxis until varMatrix(x)(y).length + curZAxis) {
+            allPiecesFit &= (z >= mat(x)(y).length || mat(x)(y)(z).color == EmptyPiece)
+          }
+        }
+      }
+
+      if (allPiecesFit) {
+        searchForFit = false
+        println(curZAxis)
+      } else {
+        curZAxis += 1
+      }
+    }
+  }
+
   // Returns the max height of the first available position
   // where a piece could be placed
   def findFirstAvailablePos(list:List[MatrixObject]): Int = {
@@ -124,10 +149,17 @@ object ProgettareInterpreter {
         dynamicMatrix = copyMat(dynamicMatrix, pos.x + 1, pos.y + 1) //If x=2, we need an array of size 3
         evalInstruction(i, mat = dynamicMatrix)
       }
-      case _ => evalInstruction(i, mat = dynamicMatrix)
+      case _ =>
+        println(i.position.x + " " + i.position.y)
+        println(dynamicMatrix.deep.mkString("\n"))
+        println()
+        evalInstruction(i, mat = dynamicMatrix)
     })
+
+    // TODO: Delete
     println(dynamicMatrix.deep.mkString("\n"))
     println("\n")
+
     dynamicMatrix
   }
 

@@ -46,53 +46,51 @@ object ProgettareInterpreter {
                  mat:Array[Array[Array[MatrixObject]]]): Unit = {
     try {
       var finalPos = -1
-      for (x <- pos.x until pos.x + p.m) {
-        for (y <- pos.y until pos.y + p.n) {
-
-          rel match {
-            // Find first avaiable position, searching from the bottom upwards
-            case Relative("at") => {
-              val curMaxPos = findFirstAvailablePos(mat(x)(y).toList)
-              if (curMaxPos > finalPos) {
-                finalPos = curMaxPos
-              }
+      for (x <- pos.x until pos.x + p.m;
+           y <- pos.y until pos.y + p.n) {
+        rel match {
+          // Find first avaiable position, searching from the bottom upwards
+          case Relative("at") => {
+            val curMaxPos = findFirstAvailablePos(mat(x)(y).toList)
+            if (curMaxPos > finalPos) {
+              finalPos = curMaxPos
             }
+          }
 
-            // Find position based on maximum height of each space below
-            case Relative("above") => {
-              if (mat(x)(y).length > finalPos) {
-                finalPos = mat(x)(y).length
-              }
+          // Find position based on maximum height of each space below
+          case Relative("above") => {
+            if (mat(x)(y).length > finalPos) {
+              finalPos = mat(x)(y).length
             }
+          }
 
-            // Find first avaiable position, searching from the max height downwards
-            case Relative("below") => {
-              val curMaxPos = findLastAvailablePos(mat(x)(y).toList)
-              if (curMaxPos > finalPos) {
-                finalPos = curMaxPos
-              }
+          // Find first avaiable position, searching from the max height downwards
+          case Relative("below") => {
+            val curMaxPos = findLastAvailablePos(mat(x)(y).toList)
+            if (curMaxPos > finalPos) {
+              finalPos = curMaxPos
             }
           }
         }
       }
 
-      for (x <- pos.x until pos.x + p.m) {
-        for (y <- pos.y until pos.y + p.n) {
-          var zDim: Array[MatrixObject] = mat(x)(y)
-          while (zDim.length <= finalPos) {
-            zDim = zDim :+ MatrixObject()
-          }
-          try {
-            mapping(p.color.toString)
-          } catch {
-            case e: java.util.NoSuchElementException => throw new QuietException("Color \"" + p.color.color + "\" not found")
-          }
-          zDim(finalPos) = MatrixObject(color = mapping(p.color.toString))
-          mat(x)(y) = zDim
+      for (x <- pos.x until pos.x + p.m;
+           y <- pos.y until pos.y + p.n) {
+        var zDim: Array[MatrixObject] = mat(x)(y)
+        while (zDim.length <= finalPos) {
+          zDim = zDim :+ MatrixObject()
         }
+        try {
+          mapping(p.color.toString)
+        } catch {
+          case e: java.util.NoSuchElementException => throw new QuietException("Color \"" + p.color.color + "\" not found")
+        }
+        zDim(finalPos) = MatrixObject(color = mapping(p.color.toString))
+        mat(x)(y) = zDim
       }
     } catch {
       case e: Exception => throw new QuietException("Piece placed out of bounds or too large for grid")
+    }
   }
 
   def placeVariable(varMatrix:Array[Array[Array[MatrixObject]]],
@@ -107,20 +105,33 @@ object ProgettareInterpreter {
       // Search for starting z axs
       rel match {
         case Relative("at") => curZAxis = 0
-        case Relative("below") => throw new QuietException("Not yet implemented")
-        case Relative("above") => throw new QuietException("Not yet implemented")
+        case Relative("above") => {
+          for (x <- 0 until varMatrix.length;
+               y <- 0 until varMatrix(x).length;
+               z <- 0 until varMatrix(x)(y).length) {
+            if (mat(x + pos.x)(y + pos.y).length > curZAxis) curZAxis = mat(x + pos.x)(y + pos.y).length
+          }
+        }
+        case Relative("below") => {
+          var maxHeight = 0
+          for (x <- 0 until varMatrix.length;
+               y <- 0 until varMatrix(x).length;
+               z <- 0 until varMatrix(x)(y).length) {
+            if (mat(x + pos.x)(y + pos.y).length > curZAxis) curZAxis = mat(x + pos.x)(y + pos.y).length
+            if (varMatrix(x)(y).length > maxHeight) maxHeight = varMatrix(x)(y).length
+          }
+          curZAxis -= (1 + maxHeight)
+        }
       }
 
       // Next, search for a fit based on the relative position
       while (searchForFit) {
         var allPiecesFit = true
 
-        for (x <- 0 until varMatrix.length) {
-          for (y <- 0 until varMatrix(x).length) {
-            for (z <- curZAxis until varMatrix(x)(y).length + curZAxis) {
-              allPiecesFit &= (z >= mat(x + pos.x)(y + pos.y).length || mat(x + pos.x)(y + pos.y)(z).color == EmptyPiece)
-            }
-          }
+        for (x <- 0 until varMatrix.length;
+             y <- 0 until varMatrix(x).length;
+             z <- curZAxis until varMatrix(x)(y).length + curZAxis) {
+          allPiecesFit &= (z >= mat(x + pos.x)(y + pos.y).length || mat(x + pos.x)(y + pos.y)(z).color == EmptyPiece)
         }
 
         // TO DO: Add error checking for if curZAxis goes negative
@@ -134,22 +145,19 @@ object ProgettareInterpreter {
         }
       }
 
-      for (x <- 0 until varMatrix.length) {
-        for (y <- 0 until varMatrix(x).length) {
-          for (z <- 0 until varMatrix(x)(y).length) {
-            var zDim: Array[MatrixObject] = mat(x + pos.x)(y + pos.y)
-            while (zDim.length <= z + curZAxis) {
-              zDim = zDim :+ MatrixObject()
-            }
-            zDim(z + curZAxis) = MatrixObject(color = varMatrix(x)(y)(z).color)
-            mat(x + pos.x)(y + pos.y) = zDim
-          }
+      for (x <- 0 until varMatrix.length;
+           y <- 0 until varMatrix(x).length;
+           z <- 0 until varMatrix(x)(y).length) {
+        var zDim: Array[MatrixObject] = mat(x + pos.x)(y + pos.y)
+        while (zDim.length <= z + curZAxis) {
+          zDim = zDim :+ MatrixObject()
         }
+        zDim(z + curZAxis) = MatrixObject(color = varMatrix(x)(y)(z).color)
+        mat(x + pos.x)(y + pos.y) = zDim
       }
     } catch {
       case e: Exception => throw new QuietException("Variable placed out of bounds or too large for grid")
     }
-
   }
 
   // Returns the max height of the first available position
@@ -199,10 +207,9 @@ object ProgettareInterpreter {
               x: Int,
               y: Int): Array[Array[Array[MatrixObject]]] = {
     val copyMatrix = Array.fill(x,y){Array[MatrixObject]()}
-    for (i <- 0 until mat.length) {
-      for (j <- 0 until mat(0).length) {
-        copyMatrix(i)(j) = mat(i)(j)
-      }
+    for (i <- 0 until mat.length;
+         j <- 0 until mat(0).length) {
+      copyMatrix(i)(j) = mat(i)(j)
     }
     copyMatrix
   }

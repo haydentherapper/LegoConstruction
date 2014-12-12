@@ -40,17 +40,17 @@ The output from the program is the 3D matrix, which will be parsed by another DS
 
 ### Data structures
 
-The two basic data structures are lists and a 3D matrix. Two lists are used to hold all variables and instructions, which are created from the parser-combinator's rep() function. 
+The two basic data structures types are List and a 3D matrix of type Array[Array[Array[MatrixObject]]]. There is also a Map that holds a mapping of Color to an integer value. Two List objects are used to hold all variables and instructions, which are created from the parser-combinator's rep() function. This consumes all matching occurences of a parser until it is exhausted.
 
-The 3D matrix is a 2D matrix of a fixed size containing dynamic arrays. This allows the set to grow upwards, while remaining in a fixed-size grid.
+The 3D matrix is a 2D matrix of a fixed size containing dynamic arrays. This allows the construction to grow upwards, while remaining in a fixed-size grid. The matrix contains a MatrixObject class, which is wrapper for the Color as an integer and the soon-to-be implemented connectedness booleans. I plan to modify this class into traits that can be mixed in.
 
-There are also going to be mappings of colors to colors. These can be added as an additional parameter to a variable, and will change every color in the variable to its respective color in the mapping. This will simplify the creation process, so a user only needs to build a structure once, and can easily switch out certain colors in the structure.
+For additional features, there will also be mappings of Color to Color. These can be added as an additional parameter to a variable, and will change every color in the variable to its respective color in the mapping. This will simplify the creation process, so a user only needs to build a structure once, and can easily switch out certain colors in the structure.
 
-#### What are the basic control structures in your DSL, if any? How does the user specify or manipulate control flow?
+### Control structures
 
-As of right now, there are no control structures. However, I may add the ability to have conditionals or for loops, which will simplify the design process. However, since my focus right now is designing a program that is easily usable by all, I don't want to add control structures yet.
+As of right now, there are no control structures. However, I want to add the ability to have conditionals or for loops, which will simplify the design process. However, since my focus right now is designing a program that is easily usable by all, I don't want to add control structures yet.
 
-#### What kind(s) of input does a program in your DSL require? What kind(s) of output does a program produce?
+### Input and output
 
 The input is a program, which is composed of a list of variables and a list of instructions. The following is an example of a program:
 ```
@@ -74,14 +74,13 @@ FullTower at 1,29
 FullTower at 29,29
 2x2 Yellow Brick at 10,10
 ```
-The input has changed slightly since the original syntax, which would have replaced curly braces with tabs. This would have simplified what the user had to type, but greatly increased the difficulty of parsing the program. Therefore, I have decided to go with curly braces for now.
 
-One new idea I am toying with is having variables that can be assigned tuple coordinates. This would allow for a simplified system of placing pieces. For example:
+For additional features, I'd like to have variables that can be assigned to tuple coordinates. This would allow for a simplified system of placing pieces. For example:
 ```
 a1 = (2,2)
 Rook at a1
 ```
-I also may want to simplify input with either for loops or systems to reference previous blocks or block placements. For example:
+I also want to simplify input with either for loops or systems to reference previous blocks or block placements. For example:
 ```
 Pawn {
   2x2 Red Brick at 1,1
@@ -90,9 +89,9 @@ Pawn {
   for 1..10, place another
 }
 ```
-One final idea is adding a line to define the initial size of the grid. However, these do not currently exist as valid input.
+Finally, I would like to add the ability to define the initial size of the grid. However, these features do not currently exist as valid input.
 
-The output will be a 3D matrix, represented as a serialized matrix in a JSON format. The following would be some input/output:
+The output is currently a a 3D matrix. This is meant to be an intermediary between the two DSLs. The following would be some input/output:
 
 Input:
 ```
@@ -102,36 +101,12 @@ Input:
 ```
 Output:
 ```
-{
-  r1: {
-        c1: [Red Brick, Red Brick]
-        c2: [Red Brick, Red Brick]
-        c3: []
-        ...
-      }
-  r2: {
-        c1: [Red Brick, Red Brick]
-        c2: [Red Brick, Red Brick]
-        ...
-      }
-  r3: {
-        c1: []
-        c2: []
-        c3: [Red Brick]
-        c4: [Red Brick]
-        ...
-      }
-  r4: {
-        ...
-        c3: [Red Brick]
-        c4: [Red Brick]
-        ...
-      }
-  ...
-}
+Array(Array(MatrixObject(1), MatrixObject(1)), Array(MatrixObject(1), MatrixObject(1)), Array(), Array(), ... ,),
+Array(Array(MatrixObject(1), MatrixObject(1)), Array(MatrixObject(1), MatrixObject(1)), Array(), ... ,),
+...
 ```
 
-#### Error handling: How can programs go wrong, and how does your language communicate those errors to the user?
+### Error handling
 
 If the input syntax is incorrect, the program will fail to parse the input and inform the user of where the error was. 
 

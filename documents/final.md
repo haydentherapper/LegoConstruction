@@ -16,3 +16,170 @@ The domain of the language is model construction, specifically using Lego bricks
 
 This tool should be easily usable by any expert of building block construction. Any user, whether they are a programmer or not, should hopefully be able to learn how to design construction with text. Likewise, the output must be extremely useful. A user should be able to render their creations and view them on-the-fly. A user should be able to tweak one small instructions and instantaneously see the difference. This is what sets this tool apart from any other construction tools: Quick and responsive to changes in the model, with an intuitive text-based input.
 
+
+
+## Language design
+
+### Input 
+
+To write a program, input is taken in through a text file, which contains the list of variables and instructions. The program takes the path of the text file and parses and interprets the input. 
+
+### Syntax
+
+Syntax was an important design choice. I wanted to maximize readibility and simplicity, while minimizing the learning curve for the program. I designed my language around two key concepts. First, I wanted the program to not look like a typical computer program. When designing variables, which are lists of instructions, I debated using tabs or curly braces to indicate the scope of the variable instructions. While tabs would be cleaner and look more natural, I would have had to write a lexer and parser myself, and I wanted to focus on the bigger picture. Therefore, I chose to use curly braces for scope. 
+
+The second key concept is designing a language that allows users to write the program much like they would design a construction. Variable construction should be natural. Placing pieces and variables in a grid should be natural. A user does not place a piece one by one, referencing the index in the grid. A user should be able to place a small construction in the total grid with as little reference to the "low-level" indices as possible. I wanted to design a language where the user could stay at the "high-level" for the majority of the time.
+
+### Computation
+
+The program takes in a list of variables and and a list of instructions. Instructions are composed of either individual pieces or variables, the way to insert the piece or variable, and a location in a grid to place the piece or variable. A piece is composed of a size and a color. A variable is a small list of instructions with relative locations, used to encapsulate a list into an easily accessible and repeatable object. 
+
+Instructions are processed, line by line, placing either a piece or variable an MxN matrix. The matrix dynamically grows upwards as more pieces are added on top of one another. Variables are stored in an environment accessible by the interpreter.
+
+The output from the program is the 3D matrix, which will be parsed by another DSL that will take this 3D matrix and output a visualization of the construction.
+
+### Data structures
+
+The two basic data structures are lists and a 3D matrix. Two lists are used to hold all variables and instructions, which are created from the parser-combinator's rep() function. 
+
+The 3D matrix is a 2D matrix of a fixed size containing dynamic arrays. This allows the set to grow upwards, while remaining in a fixed-size grid.
+
+There are also going to be mappings of colors to colors. These can be added as an additional parameter to a variable, and will change every color in the variable to its respective color in the mapping. This will simplify the creation process, so a user only needs to build a structure once, and can easily switch out certain colors in the structure.
+
+#### What are the basic control structures in your DSL, if any? How does the user specify or manipulate control flow?
+
+As of right now, there are no control structures. However, I may add the ability to have conditionals or for loops, which will simplify the design process. However, since my focus right now is designing a program that is easily usable by all, I don't want to add control structures yet.
+
+#### What kind(s) of input does a program in your DSL require? What kind(s) of output does a program produce?
+
+The input is a program, which is composed of a list of variables and a list of instructions. The following is an example of a program:
+```
+Tower {
+  2x2 Red Brick at 1,1
+  2x2 Red Brick at 1,1
+  2x2 Red Brick at 1,1
+  2x2 Red Brick at 1,1
+}
+Base {
+  4x4 Black Brick at 1,1
+}
+FullTower {
+  Base at 1,1
+  Tower at 2,2
+}
+
+FullTower at 1,1
+FullTower at 29,1
+FullTower at 1,29
+FullTower at 29,29
+2x2 Yellow Brick at 10,10
+```
+The input has changed slightly since the original syntax, which would have replaced curly braces with tabs. This would have simplified what the user had to type, but greatly increased the difficulty of parsing the program. Therefore, I have decided to go with curly braces for now.
+
+One new idea I am toying with is having variables that can be assigned tuple coordinates. This would allow for a simplified system of placing pieces. For example:
+```
+a1 = (2,2)
+Rook at a1
+```
+I also may want to simplify input with either for loops or systems to reference previous blocks or block placements. For example:
+```
+Pawn {
+  2x2 Red Brick at 1,1
+  2x2 Red Brick on top
+  Place another
+  for 1..10, place another
+}
+```
+One final idea is adding a line to define the initial size of the grid. However, these do not currently exist as valid input.
+
+The output will be a 3D matrix, represented as a serialized matrix in a JSON format. The following would be some input/output:
+
+Input:
+```
+2x2 Red Brick at 1,1
+2x2 Red Brick at 1,1
+2x2 Red Brick at 3,3
+```
+Output:
+```
+{
+  r1: {
+        c1: [Red Brick, Red Brick]
+        c2: [Red Brick, Red Brick]
+        c3: []
+        ...
+      }
+  r2: {
+        c1: [Red Brick, Red Brick]
+        c2: [Red Brick, Red Brick]
+        ...
+      }
+  r3: {
+        c1: []
+        c2: []
+        c3: [Red Brick]
+        c4: [Red Brick]
+        ...
+      }
+  r4: {
+        ...
+        c3: [Red Brick]
+        c4: [Red Brick]
+        ...
+      }
+  ...
+}
+```
+
+#### Error handling: How can programs go wrong, and how does your language communicate those errors to the user?
+
+If the input syntax is incorrect, the program will fail to parse the input and inform the user of where the error was. 
+
+Referencing undefined variables would also crash the program. I may choose to implement a setting where the program can continue, and the instruction will simply not be executed.
+
+All numerical values must be integers. All values must be in the grid. If a value is out of the grid, the program can either crash or continue on. Since a single piece may be partly in and partly out of the grid, I will need to calculate if a placement is valid for all parts of the brick.
+
+I assume that all legal piece and variable placements are what the user desires. If something seems strange, I assume the user wanted to place the pieces in such a way, and will continue execution in this way.
+
+#### What tool support (e.g., error-checking, development environments) does your project provide?
+
+It will have error-checking during the parsing step. Additionally, the second DSL will allow for the Lego program to be visualized. Users can change small parts of the program and re-render the image in realtime, allowing for creation of a set without physically designing and tweaking it.
+
+#### Are there any other DSLs for this domain? If so, what are they, and how does your language compare to these other languages?
+
+There are no other DSLs for this domain. This DSL was based off the program "Lego Digital Designer." Instead of text input, the program allowed for the drag-and-drop of pieces into a creation. 
+
+
+
+
+
+## Language implementation
+
+#### Your choice of an internal vs. external implementation and how and why you made that choice.
+
+This language should be an external DSL. I will need to parse some input and process it. Interally, I would have been unable to cleanly do all this.
+
+#### Your choice of a host language and how and why you made that choice.
+
+Scala's parser-combinator libraries that exist are both powerful and simple. As I will also be using maps and lists in the code, I can use Scala's high order functions for processing of the data structures.
+
+#### Any significant syntax design decisions you've made and the reasons for those decisions.
+
+The main choice was to move away from tabs and use curly braces. While this looks more like a programming language now, it simplified the parsing and allowed me to focus on bigger details. I believe this does not detract from the overall usability of the language.
+
+The two things I plan to add before the end are the ability for dynamically sized grids and variable names for coordinates. Both will simplify the user's experience. I'd also like to add control structures and ways to reference previous bricks or placements in the grid, but these are features which can be implemented later.
+
+#### An overview of the architecture of your system.
+
+There are four parts to this system: The initial set up, the AST, the parser, and the interpreter. 
+
+The set up will be in a main function that will take in the text file and produce the result. 
+
+The AST encodes the grammar. This includes case classes for Program, Var, and Instruction, along with other wrappers for strings. 
+
+The parser uses JavaTokenParsers to parse the input. It uses the AST classes as wrappers for output. Since the grammar is relatively simple, the parse is relatively clean. I use rep() to consume all instances of variables and instructions, which produces a List() of the respective AST.
+
+Finally, the interpreter will figure out where all parsed input must go in the grid. It will build the 3D array. It must determine everything that stacks on top of each other and the relative placement of pieces and variables in respect to the grid. It will also determine the details, such as how to deal with pieces that are offset when stacked, such as placing a 2x2 brick at the corner of another 2x2 brick, and then wanting to place a piece below in the space that is left. The matrix will then be serialized into JSON for input to the visualization DSL.
+
+
+

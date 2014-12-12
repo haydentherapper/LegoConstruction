@@ -120,7 +120,7 @@ object ProgettareInterpreter {
             if (mat(x + pos.x)(y + pos.y).length > curZAxis) curZAxis = mat(x + pos.x)(y + pos.y).length
             if (varMatrix(x)(y).length > maxHeight) maxHeight = varMatrix(x)(y).length
           }
-          curZAxis -= (1 + maxHeight)
+          curZAxis -= maxHeight
         }
       }
 
@@ -135,6 +135,7 @@ object ProgettareInterpreter {
         }
 
         // TO DO: Add error checking for if curZAxis goes negative
+        // TO DO: Do I actually need to have "above" go lower at any point?
         if (allPiecesFit) {
           searchForFit = false
         } else {
@@ -189,10 +190,27 @@ object ProgettareInterpreter {
   def createVarMatrix(instructionList: List[Instruction]): Array[Array[Array[MatrixObject]]] = {
     var dynamicMatrix = Array.fill(1,1){Array[MatrixObject]()}
     instructionList.foreach({
+      // The position plus the piece size -1 gives us if a piece is too big for the matrix
+      // -1 accounts for the piece itself. If we place a 1x1 piece at 0,0, we only need
+      // to resize once a piece larger than 1x1 is placed.
       case i @ Instruction(p: Piece, rel: Relative, pos: Position)
-        if pos.x + p.m >= dynamicMatrix.length
-          || pos.y + p.n >= dynamicMatrix(0).length => {
-        dynamicMatrix = copyMat(dynamicMatrix, pos.x + p.m + 1, pos.y + p.n + 1) //x=2,m=2, we need an array of size 5
+        if pos.x + p.m - 1 >= dynamicMatrix.length
+          && pos.y + p.n - 1 < dynamicMatrix(0).length => {
+        dynamicMatrix = copyMat(dynamicMatrix, pos.x + p.m, dynamicMatrix(0).length)
+        evalInstruction(i, mat = dynamicMatrix)
+      }
+
+      case i @ Instruction(p: Piece, rel: Relative, pos: Position)
+        if pos.x + p.m - 1 < dynamicMatrix.length
+          && pos.y + p.n - 1 >= dynamicMatrix(0).length => {
+        dynamicMatrix = copyMat(dynamicMatrix, dynamicMatrix.length, pos.y + p.n)
+        evalInstruction(i, mat = dynamicMatrix)
+      }
+
+      case i @ Instruction(p: Piece, rel: Relative, pos: Position)
+        if pos.x + p.m - 1 >= dynamicMatrix.length
+          && pos.y + p.n -1 >= dynamicMatrix(0).length => {
+        dynamicMatrix = copyMat(dynamicMatrix, pos.x + p.m, pos.y + p.n)
         evalInstruction(i, mat = dynamicMatrix)
       }
 

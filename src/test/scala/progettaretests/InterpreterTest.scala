@@ -167,32 +167,160 @@ class InterpreterTest extends FunSpec with BeforeAndAfter {
         }
       }
       describe("placing the variable with \"at\"") {
-
+        it("should place the variable in the first available spot from the base upwards") {
+          val matrix = Array.fill(32,32){Array[MatrixObject]()}
+          matrix(0)(0) = Array(MatrixObject(1), MatrixObject(1), MatrixObject(1), MatrixObject(1))
+          matrix(0)(1) = Array(MatrixObject(1), MatrixObject(1), MatrixObject(), MatrixObject(1))
+          matrix(0)(2) = Array(MatrixObject(), MatrixObject(1), MatrixObject(1))
+          val s =
+            """Var {
+              | 1x2 Red Brick at 1,1
+              | 1x1 Red Brick at 1,1
+              | 1x1 Red Brick at 1,1
+              | 1x2 Red Brick at 1,1
+              |}
+              |VarToPlace {
+              | 1x2 Red Brick at 1,1
+              | 1x1 Red Brick at 1,2
+              |}
+              |
+              |Var at 1,1
+              |VarToPlace at 1,2
+            """.stripMargin
+          assert(evaluate(s, matrix))
+        }
       }
       describe("placing the variable with \"below\"") {
-
+        it("should place the variable in the first available spot the highest point downwards") {
+          val matrix = Array.fill(32,32){Array[MatrixObject]()}
+          matrix(0)(0) = Array(MatrixObject(1), MatrixObject(1), MatrixObject(1), MatrixObject(1))
+          matrix(0)(1) = Array(MatrixObject(1), MatrixObject(), MatrixObject(1), MatrixObject(1))
+          matrix(0)(2) = Array(MatrixObject(), MatrixObject(), MatrixObject(1), MatrixObject(1))
+          val s =
+            """Var {
+              | 1x2 Red Brick at 1,1
+              | 1x1 Red Brick at 1,1
+              | 1x1 Red Brick at 1,1
+              | 1x2 Red Brick at 1,1
+              |}
+              |VarToPlace {
+              | 1x2 Red Brick at 1,1
+              | 1x1 Red Brick at 1,2
+              |}
+              |
+              |Var at 1,1
+              |VarToPlace below 1,2
+            """.stripMargin
+          assert(evaluate(s, matrix))
+        }
+        it("should place the variable even if there is only enough space and no extra space") {
+          val matrix = Array.fill(32,32){Array[MatrixObject]()}
+          matrix(0)(0) = Array(MatrixObject(1), MatrixObject(1), MatrixObject(1), MatrixObject(1))
+          matrix(0)(1) = Array(MatrixObject(1), MatrixObject(1), MatrixObject(1), MatrixObject(1))
+          matrix(0)(2) = Array(MatrixObject(), MatrixObject(1), MatrixObject(1))
+          val s =
+            """Var {
+              | 1x2 Red Brick at 1,1
+              | 1x1 Red Brick at 1,1
+              | 1x1 Red Brick at 1,1
+              | 1x2 Red Brick at 1,1
+              |}
+              |VarToPlace {
+              | 1x2 Red Brick at 1,1
+              | 1x2 Red Brick at 1,1
+              |}
+              |
+              |Var at 1,1
+              |VarToPlace below 1,2
+            """.stripMargin
+          assert(evaluate(s, matrix))
+        }
       }
       describe("placing the variable with \"above\"") {
-
-      }
-      describe("with multiple variable placements") {
-
+        it("should place the variable in the highest available cell") {
+          val matrix = Array.fill(32,32){Array[MatrixObject]()}
+          matrix(0)(0) = Array(MatrixObject(1), MatrixObject(1), MatrixObject(1), MatrixObject(1))
+          matrix(0)(1) = Array(MatrixObject(1), MatrixObject(), MatrixObject(), MatrixObject(1), MatrixObject(1))
+          matrix(0)(2) = Array(MatrixObject(), MatrixObject(), MatrixObject(), MatrixObject(), MatrixObject(1), MatrixObject(1))
+          val s =
+            """Var {
+              | 1x2 Red Brick at 1,1
+              | 1x1 Red Brick at 1,1
+              | 1x1 Red Brick at 1,1
+              | 1x2 Red Brick at 1,1
+              |}
+              |VarToPlace {
+              | 1x2 Red Brick at 1,1
+              | 1x1 Red Brick at 1,2
+              |}
+              |
+              |Var at 1,1
+              |VarToPlace above 1,2
+            """.stripMargin
+          assert(evaluate(s, matrix))
+        }
       }
     }
     describe("with errors") {
       describe("with undefined variables") {
-
+        it("should throw an exception") {
+          val matrix = Array.fill(32,32){Array[MatrixObject]()}
+          val s =
+            """ UnknownVar at 2,2
+            """.stripMargin
+          intercept[QuietException] {
+            assert(evaluate(s, matrix))
+          }
+        }
       }
       describe("with out-of-bounds placement") {
         describe("of a piece") {
-
+          it("should throw an exception") {
+            val matrix = Array.fill(32,32){Array[MatrixObject]()}
+            val s =
+              """ 1x1 Red Brick at 33,33
+              """.stripMargin
+            intercept[QuietException] {
+              assert(evaluate(s, matrix))
+            }
+          }
+        }
+        describe("of a piece that is too big") {
+          it("should throw an exception") {
+            val matrix = Array.fill(32,32){Array[MatrixObject]()}
+            val s =
+              """ 33x33 Red Brick at 1,1
+              """.stripMargin
+            intercept[QuietException] {
+              assert(evaluate(s, matrix))
+            }
+          }
         }
         describe("of a variable") {
-
+          it("should throw an exception") {
+            val matrix = Array.fill(32,32){Array[MatrixObject]()}
+            val s =
+              """ Var {
+                 | 2x2 Red Brick at 33,33
+                 |}
+                 |Var at 1,1
+              """.stripMargin
+            intercept[QuietException] {
+              assert(evaluate(s, matrix))
+            }
+          }
         }
       }
       describe("with an undefined color color") {
-
+        it("should throw an exception") {
+          val matrix = Array.fill(32,32){Array[MatrixObject]()}
+          val s =
+            """ 1x1 Violet Brick at 1,1
+            """.stripMargin
+          intercept[QuietException] {
+            assert(evaluate(s, matrix))
+          }
+        }
       }
     }
   }

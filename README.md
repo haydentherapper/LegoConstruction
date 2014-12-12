@@ -1,5 +1,5 @@
-# Lego Construction
-### Designing and visualizing Lego constructions
+# Progettare
+### Designing and visualizing block constructions
 
 This project aims to allow users to render visual representations of building blocks on the fly.
 This will be accomplished in two stages, through two DSLs:

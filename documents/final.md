@@ -116,6 +116,8 @@ All numerical values must be integers. All values must be in the grid. If a valu
 
 I assume that all legal piece and variable placements are what the user desires. If something seems strange, I assume the user wanted to place the pieces in such a way, and will continue execution in this way.
 
+Finally, the program will catch the error if the user passes an invalid file to the main program.
+
 ### Tool support
 
 I would like to add interactive error checking at some point, but that does not currently exist. Additionally, when I put this in the web, I'd like to add basic IDE functionality, such as auto-completion and basic templating for the program.
@@ -148,7 +150,13 @@ The AST encodes the grammar. This includes case classes for Program, Var, and In
 
 The parser uses JavaTokenParsers to parse the input. It uses the AST classes as wrappers for output. Since the grammar is relatively simple, the parse is relatively clean. I use rep() to consume all instances of variables and instructions, which produces a List() of the respective AST.
 
-Finally, the interpreter will figure out where all parsed input must go in the grid. It will build the 3D array. It must determine everything that stacks on top of each other and the relative placement of pieces and variables in respect to the grid. It will also determine the details, such as how to deal with pieces that are offset when stacked, such as placing a 2x2 brick at the corner of another 2x2 brick, and then wanting to place a piece below in the space that is left. The matrix will then be serialized into JSON for input to the visualization DSL.
+Finally, the interpreter will figure out where all parsed input must go in the grid. It will build the 3D array. It must determine everything that stacks on top of each other and the relative placement of pieces and variables in respect to the grid. It will also determine the details, such as how to deal with pieces that are offset when stacked, such as placing a 2x2 brick at the corner of another 2x2 brick, and then placing an "empty" piece below in the space that is left. The matrix will then be passed back to the main function to be used as output.
 
+### "Parsing" and Parsing
 
+I will cover the parsing and the main fuction here. 
+
+First, a user inputs a text file name to the program. The program checks if the file exists, and then continues by passing the raw input to the ProgettareParser.
+
+The parser relies on the AST, which I will talk about in the next section. 
 

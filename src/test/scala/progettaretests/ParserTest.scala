@@ -1,6 +1,7 @@
-package progettare
+package progettaretests
 
 import org.scalatest.FunSpec
+import progettare._
 
 /**
  * Created by Hayden Blauzvern on 12/8/14.

@@ -108,43 +108,37 @@ Array(Array(MatrixObject(1), MatrixObject(1)), Array(MatrixObject(1), MatrixObje
 
 ### Error handling
 
-If the input syntax is incorrect, the program will fail to parse the input and inform the user of where the error was. 
+If the input syntax is incorrect, the program will fail to parse the input and inform the user with the default parser-combinator errors. I debated having the program continue on after a failed parse, but it is easier for now to simply fail and show where the error is. I do this with all error checking, where I simply end execution.
 
-Referencing undefined variables would also crash the program. I may choose to implement a setting where the program can continue, and the instruction will simply not be executed.
+Referencing undefined variables will also end execution. There is also a subset of allowed colors, and the program will crash if the color is undefined.
 
-All numerical values must be integers. All values must be in the grid. If a value is out of the grid, the program can either crash or continue on. Since a single piece may be partly in and partly out of the grid, I will need to calculate if a placement is valid for all parts of the brick.
+All numerical values must be integers. All values must be in the grid. If a value is out of the grid, the program can either crash. Since a single piece may be partly in and partly out of the grid, I catch if a placement is valid for all parts of the brick, and crash otherwise.
 
 I assume that all legal piece and variable placements are what the user desires. If something seems strange, I assume the user wanted to place the pieces in such a way, and will continue execution in this way.
 
-#### What tool support (e.g., error-checking, development environments) does your project provide?
+### Tool support
 
-It will have error-checking during the parsing step. Additionally, the second DSL will allow for the Lego program to be visualized. Users can change small parts of the program and re-render the image in realtime, allowing for creation of a set without physically designing and tweaking it.
+I would like to add interactive error checking at some point, but that does not currently exist. Additionally, when I put this in the web, I'd like to add basic IDE functionality, such as auto-completion and basic templating for the program.
 
-#### Are there any other DSLs for this domain? If so, what are they, and how does your language compare to these other languages?
+### Other DSLs in the domain
 
 There are no other DSLs for this domain. This DSL was based off the program "Lego Digital Designer." Instead of text input, the program allowed for the drag-and-drop of pieces into a creation. 
 
-
+There is also Chrome's [Build With Chrome](https://www.buildwithchrome.com/), a tool for visually designing sets on the web. It has a very small subset of bricks, but is useful for creations. I may choose to interface with this and use this tool to be the output from my DSL. I found a blog where someone had reverse engineered Build With Chrome so one could upload models. I would like to build on his script and tweak it for my 3D matrix output.
 
 
 
 ## Language implementation
 
-#### Your choice of an internal vs. external implementation and how and why you made that choice.
+### Host language
 
-This language should be an external DSL. I will need to parse some input and process it. Interally, I would have been unable to cleanly do all this.
+Scala's parser-combinator libraries are both powerful and simple. As I will also be using maps and lists in the code, I can use Scala's high order functions for processing the data in these structures. I also wanted to learn more about the hybrid OO and functional programming language, especially learning how to use traits to my benefit. 
 
-#### Your choice of a host language and how and why you made that choice.
+### Internal vs. External DSL
 
-Scala's parser-combinator libraries that exist are both powerful and simple. As I will also be using maps and lists in the code, I can use Scala's high order functions for processing of the data structures.
+This language should be an external DSL. I will need to parse some input and process it. Interally, I would have been unable to cleanly do all this. I do believe this was the best design choice. I wanted to make it so non-programmers could easily use the DSL. In an external language, I control the language much more than an internal langauge, so I can simplify the input.
 
-#### Any significant syntax design decisions you've made and the reasons for those decisions.
-
-The main choice was to move away from tabs and use curly braces. While this looks more like a programming language now, it simplified the parsing and allowed me to focus on bigger details. I believe this does not detract from the overall usability of the language.
-
-The two things I plan to add before the end are the ability for dynamically sized grids and variable names for coordinates. Both will simplify the user's experience. I'd also like to add control structures and ways to reference previous bricks or placements in the grid, but these are features which can be implemented later.
-
-#### An overview of the architecture of your system.
+### Architecure overview
 
 There are four parts to this system: The initial set up, the AST, the parser, and the interpreter. 
 

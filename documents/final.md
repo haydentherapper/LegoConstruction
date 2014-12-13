@@ -304,6 +304,8 @@ I've mentioned a lot of small things throughout this report that I'd like to add
 * Implement connectedness. There's a lot to this. I need to specify if a piece is connected above or below. A piece is a part of another piece if it is connected in the x or y plane. When I implement this, I can find if any pieces are floating. I will do a breadth first search, finding everything that is connected to the base plate. Everything else that is not connected must be a floating piece.
 * Errors that do not crash the program, but let it continue on
 * Cleaning up my code, using traits and merging placeVariable with placePiece.
+* Allow for variable reference in variables.
+* Allow placements with variable alignment. Everything always aligns to the left most part of the piece, so I want to align to different parts, such as the middle or right of the piece. For example, one could align a 1x5 Red Brick at 1,3 in the middle, and it would be placed at 1,1, with the center of the brick at 1,3.
 
 ### Revisiting the evaluation.
 

@@ -4,17 +4,17 @@
 
 ### Motivation
 
-I used to use a wonderful program called [Lego Digital Designer](http://ldd.lego.com/en-us/) to assist in designing and creating Legos. Input was all through a GUI, and one could purchase the construction or download a set of instructions. However, Lego no longer supports this program, so I would like to design a language which will assist Lego designers in constructing models. There currently exist no other tools to design models via text, so I hope to design a language that is easy to use and informative in its output.
+I used to use a wonderful program called [Lego Digital Designer](http://ldd.lego.com/en-us/) to assist in designing and creating Legos. Input was all through a GUI, and one could purchase the construction or download a set of instructions. However, Lego no longer supports this program, so I would like to design a language which will assist designers in constructing models. There currently exist no other tools to design models via text, so I hope to design a language that is easy to use and informative in its output.
 
-The endgoal is having a simple language containing instructions that will generate a visual model. An external DSL is an appropriate solution since such a language should be easily parsable and interpretable, especially if we restrict the total set of bricks and possible placements of bricks. Bricks could easily be modeled in an IR, and instructions could easily be modeled using these bricks.
+The end goal is having a simple language containing instructions that will generate a visual model. An external DSL is an appropriate solution since such a language should be easily parsable and interpretable, especially if we restrict the total set of bricks and possible placements of bricks. Bricks could easily be modeled in an IR, and instructions could easily be modeled using these bricks.
 
 ### Language domain
 
-The domain of the language is model construction, specifically using Lego bricks. One issue with any type of construction, whether it be car models, knitting, or Legos, is the visualization during construction without having the model. If I can design a tool that will help with on-the-fly visualization, I feel this could benefit any type of constructor, not just Lego creators. Legos, however, are very geometric and simplify the construction process. Additionally, I love Legos, so I want to focus on Lego constructions with this DSL.
+The domain of the language is model construction, specifically using building blocks. One issue with any type of construction, whether it be car models, knitting, or Legos, is the visualization during construction without having the model. If I can design a tool that will help with on-the-fly visualization, I feel this could benefit any type of constructor, not just Lego creators. Building blocks, however, are very geometric and simplify the construction process. Additionally, I love building, so I want to focus on building block constructions with this DSL.
 
 ### Essence
 
-This tool should be easily usable by any expert of building block construction. Any user, whether they are a programmer or not, should hopefully be able to learn how to design construction with text. Likewise, the output must be extremely useful. A user should be able to render their creations and view them on-the-fly. A user should be able to tweak one small instructions and instantaneously see the difference. This is what sets this tool apart from any other construction tools: Quick and responsive to changes in the model, with an intuitive text-based input.
+This tool should be easily usable by any expert of building block construction. Any user, whether they are a programmer or not, should hopefully be able to learn how to design construction with text. Likewise, the output must be extremely useful. A user should be able to render their creations and view them on-the-fly. A user should be able to tweak one small instructions and quickly see the difference. This is what sets this tool apart from any other construction tools: Quick and responsive to changes in the model, with an intuitive text-based input.
 
 
 
@@ -32,9 +32,9 @@ The second key concept is designing a language that allows users to write the pr
 
 ### Computation
 
-The program takes in a list of variables and and a list of instructions. Instructions are composed of either individual pieces or variables, the way to insert the piece or variable, and a location in a grid to place the piece or variable. A piece is composed of a size and a color. A variable is a small list of instructions with relative locations, used to encapsulate a list into an easily accessible and repeatable object. 
+The program takes in a list of variables and a list of instructions. Instructions are composed of either individual pieces or variables, the way to insert the piece or variable, and a location in a grid to place the piece or variable. A piece is composed of a size and a color. A variable is a small list of instructions with relative locations, used to encapsulate a list into an easily accessible and repeatable object. 
 
-Instructions are processed, line by line, placing either a piece or variable an MxN matrix. The matrix dynamically grows upwards as more pieces are added on top of one another. Variables are stored in an environment accessible by the interpreter.
+Instructions are processed, line by line, placing either a piece or variable in an MxN matrix. The matrix dynamically grows upwards as more pieces are added on top of one another. Variables are stored in an environment accessible by the interpreter.
 
 The output from the program is the 3D matrix, which will be parsed by another DSL that will take this 3D matrix and output a visualization of the construction.
 
@@ -128,7 +128,83 @@ There are no other DSLs for this domain. This DSL was based off the program "Leg
 
 There is also Chrome's [Build With Chrome](https://www.buildwithchrome.com/), a tool for visually designing sets on the web. It has a very small subset of bricks, but is useful for creations. I may choose to interface with this and use this tool to be the output from my DSL. I found a blog where someone had reverse engineered Build With Chrome so one could upload models. I would like to build on his script and tweak it for my 3D matrix output.
 
+## Learn By Example
 
+The output of the current program is a 3D array matrix. In these examples, I will use ASCII art to show what the output would like in 2D, for some given input.
+
+Input 1:
+```
+O {
+  1x4 Black Brick at 1,1
+  1x1 Black Brick at 1,1
+  1x1 Black Brick at 1,1
+  1x1 Black Brick at 1,4
+  1x1 Black Brick at 1,4
+  1x4 Black Brick at 1,1
+}
+Line {
+  1x1 Black Brick at 1,1
+  1x1 Black Brick at 1,1
+  1x1 Black Brick at 1,1
+  1x1 Black Brick at 1,1
+}
+Line at 1,1
+O at 1,1
+```
+
+Output 1:
+```
+XXXX
+X  X
+X  X
+XXXX
+X
+X
+X
+X
+```
+We see this creates some letter, "P" in this case. The letter is designed compositionally, designing certain parts of the entire letter before constructing the whole shape. 
+
+Input 2:
+```
+Pawn {
+  2x2 Black Brick at 1,1
+  2x2 Black Brick at 1x1
+}
+Rook {
+  2x2 Black Brick at 1x1
+  2x2 Black Brick at 1x1
+  2x2 Black Brick at 1x1
+}
+Knight {
+  2x2 Black Brick at 1x1
+  2x2 Black Brick at 1x1
+  2x2 Black Brick at 2x1
+}
+Queen {
+  2x2 Black Brick at 1x1
+  2x2 Black Brick at 1x1
+  2x2 Black Brick at 1x1
+  2x2 Black Brick at 1x1
+}
+King {
+  2x2 Black Brick at 1x1
+  2x2 Black Brick at 1x1
+  2x2 Black Brick at 1x1
+  2x2 Black Brick at 1x1
+  2x2 Black Brick at 1x1
+}
+Rook at 2,2
+Knight at 2,6
+...
+```
+
+Output 2 (View in front of a pawn, rook and knight):
+```
+    XX   XX  
+XX  XX  XX
+XX  XX  XX
+```
 
 ## Language implementation
 

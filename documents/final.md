@@ -158,5 +158,47 @@ I will cover the parsing and the main fuction here.
 
 First, a user inputs a text file name to the program. The program checks if the file exists, and then continues by passing the raw input to the ProgettareParser.
 
-The parser relies on the AST, which I will talk about in the next section. 
+The parser relies on the AST, which I will talk about in the next section. My grammar is as follows:
+```
+Program := VarList InstructionList
+VarList := Var*
+Var := VarName "{" InstructionList "}"
+VarName := String
+InstructionList := Instruction*
+Instruction := (Piece | VarName) Relative Position
+Relative := "at" | "above" | "below"
+Piece := MxN Color Part
+Color := "Red" | "Yellow" | "Blue" | "Green" | ...
+Part := "Brick" | ...
+Position := X,Y
+```
+This is a relatively simple grammar. It also does not depend on whitespace. Any instance of '*' means to use rep() to consume all instances of a certain parser. 
 
+Currently, the parser takes any valid string for VarName, Color, or Part. The interpreter will catch if there are any issues. 
+
+An important thing that is not evident is the way the parser handles X and Y coordinates. All positions are offset by (1,1), since I have the users input grid indicies starting at 1,1 instead of 0,0. This is once again to minimize the amount of programming knowledge a user needs.
+
+### IR
+
+The IR is some number of case classes, one for each instruction in the grammar. A Program is composed of a List[Var] and List[Instruction]. Var is composed of a VarName and List[Instruction]. A VarName is just a string. This is true of multiple case classes, where Relative, Part and Color also simply wrap strings in case classes. I also have a Position case class with two methods, '+' and '-', so I may subtract and add positions, since many positions re relative of others.
+
+### Execution
+
+First, the program saves the list of variables from the parse. Then, the program evaluates each instruction.
+
+evalInstruction() processes Instruction objects that contain either a Piece or a Variable. For a Piece, the program passes evaluation off to placePiece(). For a Variable, the program creates a variable matrix, and then passes that too placeVariable().
+
+For both placePiece() and placeVariable(), the execution is relatively the same. I would like to condense these functions into one, since we can treat a single piece as a "variable," but that will be later in the code cleanup. For now, I will discuss the execution of placeVariable(), as placePiece() operates in the same ways.
+
+placeVariable() will search for a fit, tracking the z-axis height at which a fit works. For the first step in execution, the first height to search at is determined. For each relative placement:
+* "at" - Search from the base upwards, placing the variable in the first empty spot
+* "above" - Find the highest place in the 3D matrix underneath the dynamic matrix, and place
+* "below" - Find the highest place, move the search down the max height of the dynamic matrix, and search downwards
+
+We define emptiness as no intersections between the dynamic variable matrix and the total matrix. No intersections occur when the index in the total matrix is currently unoccupied or the index is occupied by an "Empty" piece. This is a piece with no color, meant to be a void block that can be filled. We search for emptiness by checking for no intersections between the two matrices. If one is found, the search moves upwards for "at" or downwards for "below" or "above." 
+
+Once a position is found, we add to the array, for each x,y coordinate, the new matrix value. We fill any space between this matrix value and the original height of the array with Empty pieces, since this empty space can be occupied at some point. During this whole process, we catch any out-of-bounds error that occurs.
+
+I'll also add how the dynamic variable matrix is created. We first create a 1x1 matrix with an empty Array(). Then, for each instruction in the variable, we attempt to place it in the dynamic matrix. If the matrix is too small, in either dimension, we scale the matrix to the proper dimension and then evaluate the instruction under the new dynamic matrix. To create a new matrix, I simply create one of the right size, then copy over all elements. This was discussed with Philip as the simplest operation to accomplish this.
+
+## Evaluation

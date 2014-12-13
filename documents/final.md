@@ -207,30 +207,37 @@ I'll also add how the dynamic variable matrix is created. We first create a 1x1 
 
 This language is meant to be a DSL. It should never evolve into a Turing complete language, usable in an everyday context. It is much like Context Free, which is to be used only to generate artwork programmatically. This language is meant to be used only for constructing sets with building blocks. 
 
-### What works well? What are you particularly pleased with?
+### What works well?
 
-I am pleased at how easy and clean parsing the input was. Everything works well, including edge cases. When designing the product, I put a lot of thought into how to work with the edge cases. Instead of having conditionals to handle certain cases, I worked them into the main body of each function, which resulted in simplified functions. 
+I am pleased at how easy and clean it was to parse the input. For the interpreter, everything works well, including edge cases, which were harder than I thought to implement and catch. When designing the product, I put a lot of thought into how to work with the edge cases. All functionality works, and I'm sure you could design any construction. 
 
-Also, I believe this program does indeed fill the niche that I wanted to fill. One can design a set with text, and get the output of a matrix that will be used to render the set in 3D.
+Also, I believe this program does indeed fill the niche that I wanted to fill. One can design a construction with text, and get the output of a matrix that will be used to render the set in 3D. It's simple, it's clean, and it's complete.
 
-### What could be improved? For example, how could the user's experience be better? How might your implementation be simpler or more cohesive?
+### Improvements
 
-There are a couple things on my list that I would like to implement. First, and this is simple, I would like to allow users to map variable names to coordinates, such as a1 = 1,1, so users can make reference to variables instead of raw coordinates.
+I've mentioned a lot of small things throughout this report that I'd like to add. I have a messy document with all of the features I would like to implement. I'll list them here:
+* Changing the static grid size, letting users specific a static size at the beginning of the file
+* Allowing coordinates to be assigned to variables. For example, a1 = 2,2
+* Let coordinates be associated to certain variables, for more relative positions. For example, Tower at BaseTower.a1
+* Have a default placement for instructions in variables, or allow reference to "origin" (1,1)
+* Allow for reference to the previous instruction. This could simplify having to specify the same location, or make reference to the same piece. I could use something like "on top," to reference the previous piece, or implement conditionals to allow one to place a piece multiple times (1..10 1x1 Brick at...)
+* Variable functions. I want a mapping of Color->Color and the ability to rotate a variable, so users don't need to reimplement a structure with different colors or orientations but have the same piece structure.
+* Allow for variables and instructions to be ordered in any way.
+* Have a matrix of a type which you can mix in like Color or Connectedness
+* Likewise, I want to use traits for interpreters for each of these properties. Also, I'd like to use traits more often to make my code more modular and simplified.
+* Implement connectedness. There's a lot to this. I need to specify if a piece is connected above or below. A piece is a part of another piece if it is connected in the x or y plane. When I implement this, I can find if any pieces are floating. I will do a breadth first search, finding everything that is connected to the base plate. Everything else that is not connected must be a floating piece.
+* Errors that do not crash the program, but let it continue on
+* Cleaning up my code, using traits and merging placeVariable with placePiece.
 
-I also would like to add two things for variables: The ability to map colors to colors, as I've mentioned before, and rotations of matrices.
+### Revisiting the evaluation.
 
-Finally, I need to add error checking. The program will gracefully catch errors, but not give useful messages.
+The only tool I have used so far is Scala. I used JavaTokenParsers in the parser, which worked very well. I tested the code with ScalaTest, which helped me to learn about two bugs:
+* For placing a variable "below," I moved the first z-axis check too far down.
+* I was copying a dynamic matrix that was too small into a dynamic matrix that was too big. I modified this so the matrix is now a perfect fit. More potential copying, but less memory usage.
+I plan to learn about Unity and Povray for the 3D rendering. The critiques have been helpful, as people have answered my questions about how to handle small issues and on UI design. However, I haven't had much need for outside tools other than the test suite.
 
-### Re-visit your evaluation plan from the beginning of the project. Which tools have you used to evaluate the quality of your design? What have you learned from these evaluations? Have you made any significant changes as a result of these tools, the critiques, or user tests?
+### Troubles with syntax and features
 
-The only tool I have used so far is Scala. I used JavaTokenParsers, which worked very well. I plan to learn about Unity and Povray for the 3D rendering. The critiques have been helpful, as people have answered my questions about how to handle things. However, I haven't had much need for outside tools, yet.
+The first thing I changed was the syntax. I wanted to implement a lexer/parser for tabs instead of curly braces, but found this really hard. I therefore went with curly braces.
 
-### Where did you run into trouble and why? For example, did you come up with some syntax that you found difficult to implement, given your host language choice? Did you want to support multiple features, but you had trouble getting them to play well together?
-
-The first thing I changed was the syntax. I wanted to implement a lexer/parser for tabs instead of curly braces, but found this really hard. I therefore went with curly braces. 
-
-I also had/am having difficulty with dynamically created matrices for the variables. Right now, I am implementing a way to reference pieces above or below the previous placement, which makes it so I can design any set, although it would be verbose. Next, I am working on creating dynamic grids for variables, and placing that whole object in the grid. There are some very annoying edge cases, such as checking for connectedness amongst pieces, but that will be dealt with later.
-
-### What's left to accomplish before the end of the project?
-
-As I mentioned, implementing these relative placements, and then designing the dynamic grids for variables. I need error checking also. I would like to implement some of the extra user features too.
+I also had difficulty with dynamically created matrices for the variables. I first evaluated each instruction step by step, but this type of dynamic evaluation led to some strange cases where pieces would fall when they should have been connected. Therefore, I moved to having dynamic matrix variables. This system seemed more difficult, but what it came down to was multiple for loops to iterate over everything. The code was verbose, but variables held their shape when being placed in the main matrix.

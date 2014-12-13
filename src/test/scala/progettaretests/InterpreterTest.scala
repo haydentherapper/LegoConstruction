@@ -21,6 +21,7 @@ class InterpreterTest extends FunSpec with BeforeAndAfter {
     }
   }
 
+  // Run after each assert
   after {
     reset(matrix)
   }

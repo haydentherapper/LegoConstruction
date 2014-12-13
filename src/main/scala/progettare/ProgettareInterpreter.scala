@@ -78,7 +78,7 @@ object ProgettareInterpreter {
            y <- pos.y until pos.y + p.n) {
         var zDim: Array[MatrixObject] = mat(x)(y)
         while (zDim.length <= finalPos) {
-          zDim = zDim :+ MatrixObject()
+          zDim = zDim :+ MatrixObject() // Add void piece that is only used for empty space
         }
         try {
           mapping(p.color.toString)
@@ -104,7 +104,10 @@ object ProgettareInterpreter {
 
       // Search for starting z axs
       rel match {
+        // Start at the base, searching upwards
         case Relative("at") => curZAxis = 0
+
+        // Place at the highest spot beneath the variable
         case Relative("above") => {
           for (x <- 0 until varMatrix.length;
                y <- 0 until varMatrix(x).length;
@@ -112,6 +115,8 @@ object ProgettareInterpreter {
             if (mat(x + pos.x)(y + pos.y).length > curZAxis) curZAxis = mat(x + pos.x)(y + pos.y).length
           }
         }
+
+        // Find the highest spot, move down the size of the variable, then search downwards
         case Relative("below") => {
           var maxHeight = 0
           for (x <- 0 until varMatrix.length;
@@ -125,6 +130,7 @@ object ProgettareInterpreter {
       }
 
       // Next, search for a fit based on the relative position
+      // TODO: Use fold to simplify the and-ing code
       while (searchForFit) {
         var allPiecesFit = true
 
@@ -134,8 +140,8 @@ object ProgettareInterpreter {
           allPiecesFit &= (z >= mat(x + pos.x)(y + pos.y).length || mat(x + pos.x)(y + pos.y)(z).color == EmptyPiece)
         }
 
-        // TO DO: Add error checking for if curZAxis goes negative
-        // TO DO: Do I actually need to have "above" go lower at any point?
+        // TODO: Add error checking for if curZAxis goes negative
+        // TODO: Do I actually need to have "above" go lower at any point?
         if (allPiecesFit) {
           searchForFit = false
         } else {
@@ -169,10 +175,10 @@ object ProgettareInterpreter {
       case x::rest if x.color == EmptyPiece  => 0
       case x::rest => 1 + findEmpty(rest)
     }
-    math.min(list.length, findEmpty(list)) // do I need this?
+    math.min(list.length, findEmpty(list)) // TODO: Do I need this?
   }
 
-  // TO DO: Returning -1 means the piece is not found, and that needs to be caught
+  // TODO: Returning -1 means the piece is not found, and that needs to be caught
   def findLastAvailablePos(list:List[MatrixObject]): Int = {
     def findEmpty(list:List[MatrixObject]): Int = list match {
       case Nil => -1
@@ -187,12 +193,15 @@ object ProgettareInterpreter {
     throw new QuietException("Variable not found")
   }
 
+  // Designs a dynamic matrix based on the variable
   def createVarMatrix(instructionList: List[Instruction]): Array[Array[Array[MatrixObject]]] = {
     var dynamicMatrix = Array.fill(1,1){Array[MatrixObject]()}
     instructionList.foreach({
       // The position plus the piece size -1 gives us if a piece is too big for the matrix
       // -1 accounts for the piece itself. If we place a 1x1 piece at 0,0, we only need
       // to resize once a piece larger than 1x1 is placed.
+
+      // Resize if X dimension is too small
       case i @ Instruction(p: Piece, rel: Relative, pos: Position)
         if pos.x + p.m - 1 >= dynamicMatrix.length
           && pos.y + p.n - 1 < dynamicMatrix(0).length => {
@@ -200,6 +209,7 @@ object ProgettareInterpreter {
         evalInstruction(i, mat = dynamicMatrix)
       }
 
+      // Resize if Y dimension is too small
       case i @ Instruction(p: Piece, rel: Relative, pos: Position)
         if pos.x + p.m - 1 < dynamicMatrix.length
           && pos.y + p.n - 1 >= dynamicMatrix(0).length => {
@@ -207,6 +217,7 @@ object ProgettareInterpreter {
         evalInstruction(i, mat = dynamicMatrix)
       }
 
+      // Resize if both X and Y dimension are too small
       case i @ Instruction(p: Piece, rel: Relative, pos: Position)
         if pos.x + p.m - 1 >= dynamicMatrix.length
           && pos.y + p.n -1 >= dynamicMatrix(0).length => {
@@ -214,13 +225,16 @@ object ProgettareInterpreter {
         evalInstruction(i, mat = dynamicMatrix)
       }
 
+      // TODO: Add variable reference inside another variable
       case Instruction(v: VarName, rel: Relative, pos: Position) => throw new Exception("Unsupported")
 
+      // Evaluate normally otherwise
       case i => evalInstruction(i, mat = dynamicMatrix)
     })
     dynamicMatrix
   }
 
+  // Resize the matrix to just large enough
   def copyMat(mat: Array[Array[Array[MatrixObject]]],
               x: Int,
               y: Int): Array[Array[Array[MatrixObject]]] = {
